@@ -26,7 +26,7 @@ read -p "Enter email for letsencrypt certificate: " EMAIL
 # create issuer
 sudo microk8s.kubectl create namespace cert-manager
 sudo microk8s.kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml
-cat << EOF | kubectl apply -f -
+cat << EOF | sudo microk8s.kubectl apply -f -
 apiVersion: cert-manager.io/v1alpha2
 kind: ClusterIssuer
 metadata:
