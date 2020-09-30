@@ -16,7 +16,6 @@ sleep 7
 echo "Adding helm repos (stakater/reloader, jetstack/cert-manager, nginx-stable/nginx-ingress)"
 sudo microk8s.helm3 repo add stakater https://stakater.github.io/stakater-charts
 sudo microk8s.helm3 repo add jetstack https://charts.jetstack.io
-sudo microk8s.helm3 repo add nginx-stable https://helm.nginx.com/stable
 sudo microk8s.helm3 repo update
 
 echo "Installing reloader chart"
