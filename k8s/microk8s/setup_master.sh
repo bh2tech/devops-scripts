@@ -7,30 +7,40 @@ sudo snap install docker
 sudo snap install microk8s --classic
 
 # enable addons
-echo "Enable microk8s addons"
-sudo microk8s enable dns ingress helm3
+echo "Enable microk8s addons (helm3, dns)"
+sudo microk8s enable dns helm3 ingress
 
-while true; do
-    read -p "Do you wish to install letsencrypt? [y/n]" yn
-    case $yn in
-        [Yy]* ) INSTALL_LETSENCRYPT=1; break;;
-        [Nn]* ) INSTALL_LETSENCRYPT=0; break;;
-        * ) echo "Please answer yes or no.";;
-    esac
-done
+sleep 7
 
-if [ "$INSTALL_LETSENCRYPT" = 1 ]
-then
+# add helm repos
+echo "Adding helm repos (stakater/reloader, jetstack/cert-manager, nginx-stable/nginx-ingress)"
+sudo microk8s.helm3 repo add stakater https://stakater.github.io/stakater-charts
+sudo microk8s.helm3 repo add jetstack https://charts.jetstack.io
+sudo microk8s.helm3 repo add nginx-stable https://helm.nginx.com/stable
+sudo microk8s.helm3 repo update
+
+echo "Installing reloader chart"
+sudo microk8s.helm3 install reloader stakater/reloader
+
+echo "Installing cert-manager chart"
+sudo microk8s.kubectl create ns cert-manager
+sudo microk8s.helm3 install \
+  cert-manager jetstack/cert-manager \
+  --namespace cert-manager \
+  --version v1.0.2 \
+  --set installCRDs=true
+
+# wait for pods start
+sleep 5
+
 read -p "Enter email for letsencrypt certificate: " EMAIL
 
 # create issuer
-sudo microk8s.kubectl create namespace cert-manager
-sudo microk8s.kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.12.0/cert-manager.yaml
 cat << EOF | sudo microk8s.kubectl apply -f -
-apiVersion: cert-manager.io/v1alpha2
+apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
- name: letsencrypt-dev
+ name: letsencrypt-prod
  namespace: cert-manager
 spec:
  acme:
@@ -40,7 +50,7 @@ spec:
    email: $EMAIL
    # Name of a secret used to store the ACME account private key
    privateKeySecretRef:
-     name: letsencrypt-dev
+     name: letsencrypt-prod
    # Enable the HTTP-01 challenge provider
    solvers:
    - http01:
@@ -72,11 +82,7 @@ rules:
         serviceName: {{ SERVICE_NAME }}
         servicePort: 80
 EOF
-else
-echo "To use your certificate, run:"
-echo "kubectl create secret tls certificate-tls --key=\"tls.key\" --cert=\"tls.crt\""
-echo ""
-fi
+
 # show tokens
 KNOWN_TOKENS_FILE=/var/snap/microk8s/current/credentials/known_tokens.csv
 # KNOWN_TOKENS_FILE=known_hosts.csv
