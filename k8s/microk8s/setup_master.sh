@@ -92,7 +92,7 @@ IFS=',' read -ra DATA <<< "$FIRST_LINE"
 
 K8S_TOKEN="${DATA[0]}"
 K8S_USERNAME="${DATA[1]}"
-K8S_CLUSTER_IP="$(dig @resolver1.opendns.com ANY myip.opendns.com +short)"
+K8S_CLUSTER_IP="$(dig +short myip.opendns.com @resolver1.opendns.com)"
 
 echo "The cluster crendentials are:"
 echo ""
