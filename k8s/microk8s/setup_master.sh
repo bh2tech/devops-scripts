@@ -1,5 +1,7 @@
 # /bin/bash
 
+# kubernetes supported: 1.22
+
 # install docker
 sudo snap install docker
 
@@ -26,7 +28,7 @@ sudo microk8s.kubectl create ns cert-manager
 sudo microk8s.helm3 install \
   cert-manager jetstack/cert-manager \
   --namespace cert-manager \
-  --version v1.0.2 \
+  --version v1.5.0 \
   --set installCRDs=true
 
 # wait for pods start
@@ -98,13 +100,13 @@ echo "The cluster crendentials are:"
 echo ""
 echo "K8S_TOKEN=$K8S_TOKEN"
 echo "K8S_USERNAME=$K8S_USERNAME"
-echo "K8S_CLUSTER_IP=https://$K8S_CLUSTER_IP:16443"
+echo "K8S_CLUSTER_URL=https://$K8S_CLUSTER_IP:16443"
 
 echo ""
 
 echo "In order to configure the connection on your machine, run the following commands:"
 echo ""
-echo "kubectl config set-cluster cluster --server=$K8S_CLUSTER_IP --insecure-skip-tls-verify"
+echo "kubectl config set-cluster cluster --server=$K8S_CLUSTER_URL --insecure-skip-tls-verify"
 echo "kubectl config set-credentials $K8S_USERNAME --token=$K8S_TOKEN"
 echo "kubectl config set-context dev --cluster=cluster --user=$K8S_USERNAME"
 
